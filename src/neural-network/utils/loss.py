@@ -8,11 +8,26 @@ from typing import Dict
 EPS = 1e-7 # 10^(-7) - pentru stabilitate numerica
 
 
-def bbox_decode(tbox, x_idx, y_idx, stride, H, W, device):
+def bbox_decode(tbox, x_idx, y_idx, stride, H, W, device, is_prediction=False):
+    """Decode bbox from grid-space to pixel-space.
+    
+    Args:
+        tbox: (N, 4) tensor with [tx, ty, tw, th]
+        is_prediction: If True, applies exp() to tw/th (for model outputs)
+                      If False, tw/th are already in stride-space (for targets)
+    """
     cx = (x_idx + tbox[:, 0]) * stride
     cy = (y_idx + tbox[:, 1]) * stride
-    w = tbox[:, 2] * stride
-    h = tbox[:, 3] * stride
+    
+    if is_prediction:
+        # Model outputs tw/th as logits, need exp() to get actual size
+        w = torch.exp(tbox[:, 2]) * stride
+        h = torch.exp(tbox[:, 3]) * stride
+    else:
+        # Ground truth already in stride-space
+        w = tbox[:, 2] * stride
+        h = tbox[:, 3] * stride
+    
     return torch.stack([cx, cy, w, h], dim=1)
 
 
@@ -139,9 +154,9 @@ class DetectionSegLoss(nn.Module):
             pred_cls_cells = pred_cls_cells.transpose(0, 1)
 
             decoded_pred = bbox_decode(pred_box_cells, x_idx, y_idx, stride,
-                                       box_pred.shape[-2], box_pred.shape[-1], device)
+                                       box_pred.shape[-2], box_pred.shape[-1], device, is_prediction=True)
             decoded_target = bbox_decode(tbox, x_idx, y_idx, stride,
-                                         box_pred.shape[-2], box_pred.shape[-1], device)
+                                         box_pred.shape[-2], box_pred.shape[-1], device, is_prediction=False)
 
             pred_xyxy = box_cxcywh_to_xyxy(decoded_pred)
             target_xyxy = box_cxcywh_to_xyxy(decoded_target)
@@ -158,21 +173,21 @@ class DetectionSegLoss(nn.Module):
             mask_loss = torch.tensor(0., device=device)
             # TODO: după ce implementezi pipeline-ul coef->proto->crop->mask_gt, calculezi BCE aici.
 
-            total_box_loss += box_loss
-            total_cls_loss += cls_loss
-            total_mask_loss += mask_loss
+            # Accumulate weighted losses per-sample to avoid amplification across levels
+            total_box_loss += box_loss * self.box_weight
+            total_cls_loss += cls_loss * self.cls_weight
+            total_mask_loss += mask_loss * self.mask_weight
             count += 1
 
         if count == 0:
             total = total_box_loss + total_cls_loss + total_mask_loss
         else:
-            total = (self.box_weight * total_box_loss +
-                     self.cls_weight * total_cls_loss +
-                     self.mask_weight * total_mask_loss)
+            # Losses already weighted per-level, just average across levels
+            total = (total_box_loss + total_cls_loss + total_mask_loss) / count
 
         return total, {
-            "loss_box": total_box_loss.detach(),
-            "loss_cls": total_cls_loss.detach(),
-            "loss_mask": total_mask_loss.detach(),
+            "loss_box": (total_box_loss / max(count, 1)).detach(),
+            "loss_cls": (total_cls_loss / max(count, 1)).detach(),
+            "loss_mask": (total_mask_loss / max(count, 1)).detach(),
             "loss_total": total.detach()
         }

@@ -1,0 +1,259 @@
+/* MapView Component Styles */
+
+.map-view-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Leaflet container accessibility improvements */
+.leaflet-container {
+  font-family: inherit;
+}
+
+.leaflet-container:focus {
+  outline: 3px solid var(--color-primary, #4285F4);
+  outline-offset: 2px;
+}
+
+/* Custom marker icons */
+.custom-icon {
+  background: transparent;
+  border: none;
+}
+
+.marker-pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  background: #4285F4;
+  position: absolute;
+  transform: rotate(-45deg);
+  left: 50%;
+  top: 50%;
+  margin: -15px 0 0 -15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid #fff;
+}
+
+.marker-pin::after {
+  content: '';
+  width: 18px;
+  height: 18px;
+  margin: 6px 0 0 6px;
+  background: #fff;
+  position: absolute;
+  border-radius: 50%;
+}
+
+/* User location marker */
+.user-location-marker {
+  background: transparent;
+  border: none;
+}
+
+.user-location-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4285F4;
+  border: 3px solid #fff;
+  box-shadow: 0 0 10px rgba(66, 133, 244, 0.6);
+  position: relative;
+}
+
+/* Pulsing animation for user location */
+.pulse-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 3px solid #4285F4;
+  border-radius: 50%;
+  animation: pulse 2s ease-out infinite;
+  top: -3px;
+  left: -3px;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* Marker popup styling */
+.marker-popup {
+  min-width: 200px;
+}
+
+.marker-popup h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: var(--color-primary, #4285F4);
+}
+
+.marker-popup p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.marker-popup .rating {
+  color: #FBBC04;
+  font-size: 18px;
+  margin: 8px 0;
+}
+
+.marker-popup .rating-text {
+  color: #555;
+  font-size: 14px;
+  margin-left: 4px;
+}
+
+.marker-popup .last-checked {
+  color: #888;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* Locate me button */
+.locate-button {
+  position: absolute;
+  bottom: 100px;
+  right: 20px;
+  z-index: 1000;
+  background: #fff;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  color: var(--color-primary, #4285F4);
+}
+
+.locate-button:hover {
+  background: #f5f5f5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: scale(1.05);
+}
+
+.locate-button:focus {
+  outline: 3px solid var(--color-primary, #4285F4);
+  outline-offset: 2px;
+}
+
+.locate-button:active {
+  transform: scale(0.95);
+}
+
+.locate-button.locating {
+  background: var(--color-primary, #4285F4);
+  color: #fff;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Leaflet popup accessibility improvements */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-tip {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .locate-button {
+    bottom: 80px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .marker-popup {
+    min-width: 150px;
+  }
+
+  .marker-popup h3 {
+    font-size: 14px;
+  }
+
+  .marker-popup p {
+    font-size: 12px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .locate-button {
+    border-width: 3px;
+    border-color: #000;
+  }
+
+  .marker-pin {
+    border-width: 3px;
+  }
+
+  .user-location-dot {
+    border-width: 4px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .pulse-ring {
+    animation: none;
+    opacity: 0;
+  }
+
+  .locate-button.locating {
+    animation: none;
+  }
+
+  .locate-button:hover {
+    transform: none;
+  }
+}
+
+/* Dyslexia mode adjustments */
+body.dyslexia-mode .marker-popup h3,
+body.dyslexia-mode .marker-popup p {
+  font-family: 'OpenDyslexic', sans-serif;
+  letter-spacing: 0.05em;
+  word-spacing: 0.2em;
+  line-height: 1.6;
+}

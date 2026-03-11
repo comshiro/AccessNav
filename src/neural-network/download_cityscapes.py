@@ -24,7 +24,7 @@ import cv2
 # Cityscapes label names we care about
 CITYSCAPES_TO_YOLO = {
     "sidewalk": 0,      # sidewalk -> sidewalk
-    "terrain": 0,       # terrain -> sidewalk (walkable areas)
+    "terrain": 1,       # terrain -> obstacle (not wheelchair accessible)
     "pole": 1,          # pole -> obstacle
     "traffic sign": 1,  # traffic sign -> obstacle
 }

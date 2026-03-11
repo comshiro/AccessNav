@@ -27,9 +27,16 @@ class DetectionHead(nn.Module):
         outputs = []
         for i, x in enumerate(feats):
             x = self.stems[i](x)
-            box = self.box_convs[i](x)   # (B, 4, H, W) - 4 - coordonate bbox
+            box_raw = self.box_convs[i](x)   # (B, 4, H, W) - 4 - coordonate bbox
             cls = self.cls_convs[i](x)   # (B, C, H, W) - c - nr clase
             coef = self.coef_convs[i](x) # (B, P, H, W) - p - nr coeficienti
+            
+            # Apply activations for bbox: sigmoid for offsets (tx, ty), leave tw/th raw for now
+            # Loss function will apply exp() to tw/th during decoding
+            box = box_raw.clone()
+            box[:, 0:2] = torch.sigmoid(box_raw[:, 0:2])  # tx, ty in [0, 1]
+            # tw, th stay as raw logits - will use exp() in loss
+            
             outputs.append({"box": box, "cls": cls, "coef": coef})
         return outputs
 
